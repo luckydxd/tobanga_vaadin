@@ -1,29 +1,29 @@
 package com.example.application.data.service;
 
-import com.example.application.data.entity.Produk;
+import com.example.application.data.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
-public class ProdukService {
-    private final ProdukService repository;
+public class ProductService {
+    private final ProductService repository;
 
-    public ProdukService(ProdukService repository) {
+    public ProductService(ProductService repository) {
         this.repository = repository;
     }
-    public Optional<Produk> get(Long id) {
+    public Optional<Product> get(Long id) {
         return repository.findById(id);
     }
 
-    private Optional<Produk> findById(Long id) {
+    private Optional<Product> findById(Long id) {
         return null;
     }
-    public Produk update(Produk entity) {
+    public Product update(Product entity) {
         return repository.save(entity);
     }
 
-    private Produk save(Produk entity) {
+    private Product save(Product entity) {
         return null;
     }
     public void delete(Long id) {
@@ -32,11 +32,11 @@ public class ProdukService {
 
     private void deleteById(Long id) {
     }
-    public Page<Produk> list(Pageable pageable) {
+    public Page<Product> list(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
-    private Page<Produk> findAll(Pageable pageable) {
+    private Page<Product> findAll(Pageable pageable) {
         return null;
     }
 

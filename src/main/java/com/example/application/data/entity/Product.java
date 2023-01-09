@@ -3,7 +3,7 @@ package com.example.application.data.entity;
 import javax.persistence.Entity;
 
 @Entity
-public class Produk extends AbstractEntity{
+public class Product extends AbstractEntity{
     private  String namaProduk;
     private String namaKategori;
     private  byte[] Thumbnails;
