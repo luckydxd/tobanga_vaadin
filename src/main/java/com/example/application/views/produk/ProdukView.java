@@ -1,8 +1,11 @@
 package com.example.application.views.produk;
 
+import com.example.application.data.entity.Produk;
 import com.example.application.data.entity.SamplePerson;
+import com.example.application.data.service.ProdukService;
 import com.example.application.data.service.SamplePersonService;
 import com.example.application.views.MainLayout;
+import com.example.application.views.kategori.KategoriView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -20,6 +23,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -42,26 +46,24 @@ public class ProdukView extends Div implements BeforeEnterObserver {
 
     private final Grid<SamplePerson> grid = new Grid<>(SamplePerson.class, false);
 
-    private TextField firstName;
-    private TextField lastName;
-    private TextField email;
-    private TextField phone;
-    private DatePicker dateOfBirth;
-    private TextField occupation;
-    private TextField role;
-    private Checkbox important;
+    private TextField namaProduk;
+    private TextField namaKategori;
+    private Upload Thumbnails;
+    private TextField Harga;
+    private DatePicker Terjual;
+    private TextField diBuat;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
 
-    private final BeanValidationBinder<SamplePerson> binder;
+    private final BeanValidationBinder<Produk> binder;
 
-    private SamplePerson samplePerson;
+    private Produk Produk;
 
-    private final SamplePersonService samplePersonService;
+    private final ProdukService produkService;
 
-    public ProdukView(SamplePersonService samplePersonService) {
-        this.samplePersonService = samplePersonService;
+    public ProdukView(ProdukService produkService) {
+        this.produkService = produkService;
         addClassNames("produk-view");
 
         // Create UI
@@ -73,15 +75,14 @@ public class ProdukView extends Div implements BeforeEnterObserver {
         add(splitLayout);
 
         // Configure Grid
-        grid.addColumn("firstName").setAutoWidth(true);
-        grid.addColumn("lastName").setAutoWidth(true);
-        grid.addColumn("email").setAutoWidth(true);
-        grid.addColumn("phone").setAutoWidth(true);
-        grid.addColumn("dateOfBirth").setAutoWidth(true);
-        grid.addColumn("occupation").setAutoWidth(true);
-        grid.addColumn("role").setAutoWidth(true);
+        grid.addColumn("namaProduk").setAutoWidth(true);
+        grid.addColumn("namaKategori").setAutoWidth(true);
+        grid.addColumn("Thumbnail").setAutoWidth(true);
+        grid.addColumn("Harga").setAutoWidth(true);
+        grid.addColumn("Terjual").setAutoWidth(true);
+        grid.addColumn("diBuat").setAutoWidth(true);
         LitRenderer<SamplePerson> importantRenderer = LitRenderer.<SamplePerson>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
                 .withProperty("icon", important -> important.isImportant() ? "check" : "minus").withProperty("color",
                         important -> important.isImportant()
                                 ? "var(--lumo-primary-text-color)"
@@ -90,7 +91,7 @@ public class ProdukView extends Div implements BeforeEnterObserver {
         grid.addColumn(importantRenderer).setHeader("Important").setAutoWidth(true);
 
         grid.setItems(query -> samplePersonService.list(
-                PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -100,12 +101,12 @@ public class ProdukView extends Div implements BeforeEnterObserver {
                 UI.getCurrent().navigate(String.format(SAMPLEPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
             } else {
                 clearForm();
-                UI.getCurrent().navigate(ProdukView.class);
+                UI.getCurrent().navigate(KategoriView.class);
             }
         });
 
         // Configure Form
-        binder = new BeanValidationBinder<>(SamplePerson.class);
+        binder = new BeanValidationBinder<>(Produk.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
 
@@ -118,11 +119,11 @@ public class ProdukView extends Div implements BeforeEnterObserver {
 
         save.addClickListener(e -> {
             try {
-                if (this.samplePerson == null) {
-                    this.samplePerson = new SamplePerson();
+                if (this.Produk == null) {
+                    this.Produk = new Produk();
                 }
-                binder.writeBean(this.samplePerson);
-                samplePersonService.update(this.samplePerson);
+                binder.writeBean(this.Produk);
+                produkService.update(this.Produk);
                 clearForm();
                 refreshGrid();
                 Notification.show("Data updated");
@@ -142,13 +143,13 @@ public class ProdukView extends Div implements BeforeEnterObserver {
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<Long> samplePersonId = event.getRouteParameters().get(SAMPLEPERSON_ID).map(Long::parseLong);
         if (samplePersonId.isPresent()) {
-            Optional<SamplePerson> samplePersonFromBackend = samplePersonService.get(samplePersonId.get());
-            if (samplePersonFromBackend.isPresent()) {
-                populateForm(samplePersonFromBackend.get());
+            Optional<Produk> produkFromBackend = produkService.get(getNamaProduk());
+            if (produkFromBackend.isPresent()) {
+                populateForm(produkFromBackend.get());
             } else {
                 Notification.show(
                         String.format("The requested samplePerson was not found, ID = %s", samplePersonId.get()), 3000,
-                        Notification.Position.BOTTOM_START);
+                        Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
                 refreshGrid();
@@ -166,15 +167,13 @@ public class ProdukView extends Div implements BeforeEnterObserver {
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
-        firstName = new TextField("First Name");
-        lastName = new TextField("Last Name");
-        email = new TextField("Email");
-        phone = new TextField("Phone");
-        dateOfBirth = new DatePicker("Date Of Birth");
-        occupation = new TextField("Occupation");
-        role = new TextField("Role");
-        important = new Checkbox("Important");
-        formLayout.add(firstName, lastName, email, phone, dateOfBirth, occupation, role, important);
+        namaProduk = new TextField("Nama Kategori");
+        namaKategori = new TextField("Nama");
+        Thumbnails = new Upload();
+        Harga = new TextField("Harga");
+        Terjual = new DatePicker("Terjual");
+        diBuat = new TextField("Di Buat");
+        formLayout.add(namaProduk, namaKategori, Thumbnails, Harga, Terjual, diBuat);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -208,8 +207,8 @@ public class ProdukView extends Div implements BeforeEnterObserver {
     }
 
     private void populateForm(SamplePerson value) {
-        this.samplePerson = value;
-        binder.readBean(this.samplePerson);
+        this.Produk = value;
+        binder.readBean(this.Produk);
 
     }
 }
