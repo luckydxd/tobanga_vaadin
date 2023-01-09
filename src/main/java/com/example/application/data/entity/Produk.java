@@ -4,7 +4,12 @@ import javax.persistence.Entity;
 
 @Entity
 public class Produk extends AbstractEntity{
-
+    private  String namaProduk;
+    private String namaKategori;
+    private  byte[] Thumbnails;
+    private  String Harga;
+    private  String Terjual;
+    private  String diBuat;
     public String getNamaProduk() {
         return namaProduk;
     }
@@ -53,10 +58,5 @@ public class Produk extends AbstractEntity{
         this.diBuat = diBuat;
     }
 
-    private  String namaProduk;
-    private String namaKategori;
-    private  byte[] Thumbnails;
-    private  String Harga;
-    private  String Terjual;
-    private  String diBuat;
+
 }
